@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Таксопарк</title>
+</head>
+<body>
+
+    <header>
+        <span class="logo">Таксопарк</span>
+    </header>
+    
+    <div class="menu">
+        <button onclick="ShowDefault()">ПОКАЗАТЬ ВСЕ ПО СТРАНИЦАМ</button>
+        <button onclick="CreateNew()">СОЗДАТЬ</button>
+        <button onclick="ShowById()">НАЙТИ ПО ID</button>
+        <button onclick="ShowByName()">НАЙТИ ПО МОДЕЛИ</button>
+        <button onclick="SortByModel()">ОТСОРТИРОВАТЬ ПО МОДЕЛЯМ</button>
+        <!-- Добавить внутрь <div class="menu"> -->
+        <a href="/chat"><button>ЧАТ С ПОДДЕРЖКОЙ</button></a>
+        <a href="/support"><button>ПАНЕЛЬ ОПЕРАТОРА</button></a>
+    </div>
+
+    <div class="form-wrapper ds-none" id="form-wrapper">
+        <div class="form" id="form">
+            <span class="title">Введите значения:</span>
+            <div class="row">
+                <span class="subtitle">Модель:</span>
+                <input type="text" name="model" id="model-input" value="">
+            </div>
+            <div class="row">
+                <span class="subtitle">Год:</span>
+                <input type="text" name="year" id="year-input" value="">
+            </div>
+            <div class="form-controls">
+                <button onclick="CloseForm()" style="border:none">Отменить</button>
+                <button onclick="SubmitForm()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="view"></div>
+
+    <script src='http://code.jquery.com/jquery-latest.js'></script>
+    <script src="app.js"></script>
+</body>
+</html>

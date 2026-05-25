@@ -1,0 +1,9 @@
+<div class="card" data-id="<%=id%>" data-model="<%=model%>" data-year="<%=year%>">
+    <span class="card-id">#ID: <%=id%></span>
+    <span><%=model%></span>
+    <span><%=year%></span>
+    <div class="controls">
+        <button onclick="{updateCardHandle(event)}"><img src="img/edit.png" alt="Редактировать"></button>
+        <button onclick="{deleteCardHandle(event)}"><img src="img/delete.png" alt="Удалить"></button>
+    </div>
+</div>

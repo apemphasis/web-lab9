@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поддержка</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header><span class="logo">Чат с поддержкой</span></header>
+    
+    <div class="menu">
+        <a href="/"><button>НА ГЛАВНУЮ</button></a>
+    </div>
+
+    <div id="view">
+        <div class="card" style="width: 50%; flex-direction: column; align-items: stretch; gap: 10px;">
+            <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #d59713; padding: 15px; border-radius: 5px;"></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="msg" placeholder="Опишите вашу проблему..." style="flex-grow: 1; padding: 10px; font-size: 16px;">
+                <button id="sendBtn" style="padding: 10px 20px; cursor: pointer;">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const clientName = prompt("Представьтесь, пожалуйста:");
+        
+        // Регистрируемся как клиент
+        socket.emit("register", { name: clientName, role: "client" });
+
+        const chatBox = document.getElementById("chat-box");
+        
+        document.getElementById("sendBtn").onclick = () => {
+            const message = document.getElementById("msg").value;
+            if(message.trim() !== "") {
+                // Отправляем сообщение в свою комнату
+                socket.emit("sendMessage", { roomId: socket.id, message, senderName: clientName });
+                document.getElementById("msg").value = "";
+            }
+        };
+
+        socket.on("newMessage", ({ senderName, message }) => {
+            chatBox.innerHTML += `<div style="margin-bottom: 5px;"><b>${senderName}:</b> ${message}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>

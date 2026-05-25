@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель Оператора</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .support-container { display: flex; width: 80%; gap: 20px; margin: 0 auto; }
+        .clients-list { width: 30%; border: 1px solid #d59713; padding: 15px; border-radius: 10px; }
+        .chat-area { width: 70%; border: 1px solid #d59713; padding: 15px; border-radius: 10px; display: none; flex-direction: column; gap: 10px;}
+        .client-item { padding: 10px; border-bottom: 1px solid #ccc; cursor: pointer; transition: 0.3s;}
+        .client-item:hover { background-color: #fce8bd; }
+    </style>
+</head>
+<body>
+    <header><span class="logo">Панель Оператора</span></header>
+    
+    <div class="menu">
+        <a href="/"><button>НА ГЛАВНУЮ</button></a>
+    </div>
+    
+    <div class="support-container">
+        <div class="clients-list">
+            <h2 style="margin-bottom: 15px;">Запросы</h2>
+            <div id="users"></div>
+        </div>
+        
+        <div class="chat-area" id="chat-area">
+            <h2 id="current-chat-title">Чат</h2>
+            <div id="chat-box" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; border-radius: 5px;"></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="msg" placeholder="Введите ответ..." style="flex-grow: 1; padding: 10px; font-size: 16px;">
+                <button id="sendBtn" style="padding: 10px 20px;">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const supportName = prompt("Введите ваше имя (Оператор):");
+        
+        // Регистрируемся как саппорт
+        socket.emit("register", { name: supportName, role: "support" });
+
+        let currentClientId = null;
+        const usersDiv = document.getElementById("users");
+        const chatArea = document.getElementById("chat-area");
+        const chatBox = document.getElementById("chat-box");
+        const currentChatTitle = document.getElementById("current-chat-title");
+
+        socket.on("clientsList", (clients) => {
+            usersDiv.innerHTML = "";
+            if (Object.keys(clients).length === 0) {
+                usersDiv.innerHTML = "<i>Нет активных запросов</i>";
+            }
+            Object.values(clients).forEach((client) => {
+                const div = document.createElement("div");
+                div.className = "client-item";
+                div.textContent = `Клиент: ${client.name}`;
+                div.onclick = () => {
+                    currentClientId = client.id;
+                    chatArea.style.display = "flex";
+                    currentChatTitle.textContent = `Диалог с: ${client.name}`;
+                    chatBox.innerHTML = ""; // Очищаем историю при переключении
+                    socket.emit("joinChat", currentClientId);
+                };
+                usersDiv.appendChild(div);
+            });
+        });
+
+        // Загрузка истории сообщений при подключении к клиенту
+        socket.on("loadHistory", (history) => {
+            chatBox.innerHTML = ""; // очищаем окно перед загрузкой истории
+            
+            if (history.length === 0) {
+                chatBox.innerHTML = `<div style="color: gray; font-style: italic; margin-bottom: 5px;">История сообщений пуста...</div>`;
+            } else {
+                history.forEach(({ senderName, message }) => {
+                    chatBox.innerHTML += `<div style="margin-bottom: 5px;"><b>${senderName}:</b> ${message}</div>`;
+                });
+            }
+            chatBox.scrollTop = chatBox.scrollHeight; // прокрутка вниз
+        });
+
+        document.getElementById("sendBtn").onclick = () => {
+            const message = document.getElementById("msg").value;
+            if(message.trim() !== "" && currentClientId) {
+                socket.emit("sendMessage", { roomId: currentClientId, message, senderName: supportName });
+                document.getElementById("msg").value = "";
+            }
+        };
+
+        socket.on("newMessage", ({ senderName, message }) => {
+            chatBox.innerHTML += `<div style="margin-bottom: 5px;"><b>${senderName}:</b> ${message}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        socket.on("systemMsg", (msg) => {
+            chatBox.innerHTML += `<div style="color: gray; font-style: italic; margin-bottom: 5px;">${msg}</div>`;
+        });
+    </script>
+</body>
+</html>
